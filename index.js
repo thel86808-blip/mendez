@@ -495,6 +495,20 @@ client.on("interactionCreate", async interaction => {
     }
 });
 
+const commandsPath = path.join(__dirname, "commands");
+if (fs.existsSync(commandsPath)) {
+    const commandFiles = fs.readdirSync(commandsPath).filter(f => f.endsWith(".js"));
+    for (const file of commandFiles) {
+        const command = require(path.join(commandsPath, file));
+        if (command.data && command.execute) {
+            client.commands.set(command.data.name, command);
+            console.log(`✅ Command geladen: ${command.data.name}`);
+        } else {
+            console.warn(`⚠️ Command ${file} mist data of execute()`);
+        }
+    }
+}
+
 /* ======================
    READY
 ====================== */
