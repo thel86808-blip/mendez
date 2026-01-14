@@ -528,6 +528,10 @@ client.handleCommands = async () => {
     }
 };
 
+console.log("Commands in array:", client.commandArray.map(c => c.name));
+
+
+
 
 
 /* ======================
@@ -542,6 +546,7 @@ client.once("ready", () => {
    LOGIN
 ====================== */
 client.login(TOKEN);
+
 
 
 
