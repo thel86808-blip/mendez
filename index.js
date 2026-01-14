@@ -481,9 +481,24 @@ interaction.reply({ content: "❌ Error", ephemeral: true });
 /* ======================
    LOGIN
 ====================== */
+
+const express = require('express'); // CommonJS-style
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.send('Bot draait!');
+});
+
+app.listen(PORT, () => {
+  console.log(`Webserver draait op poort ${PORT}`);
+});
+
+
 const token = process.env.TOKEN?.trim();
 console.log("TOKEN lengte na trim:", token.length);
 client.login(token);
+
 
 
 
