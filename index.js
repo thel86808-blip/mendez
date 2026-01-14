@@ -16,7 +16,6 @@ const {
 const fs = require("fs");
 const express = require("express");
 require("dotenv").config();
-const path = require("path");
 
 /* ======================
    CLIENT
@@ -496,19 +495,15 @@ client.on("interactionCreate", async interaction => {
     }
 });
 
-const commandsPath = path.join(__dirname, "commands");
-if (fs.existsSync(commandsPath)) {
-    const commandFiles = fs.readdirSync(commandsPath).filter(f => f.endsWith(".js"));
-    for (const file of commandFiles) {
-        const command = require(path.join(commandsPath, file));
-        if (command.data && command.execute) {
-            client.commands.set(command.data.name, command);
-            console.log(`✅ Command geladen: ${command.data.name}`);
-        } else {
-            console.warn(`⚠️ Command ${file} mist data of execute()`);
-        }
+// Registreer alle commands die al in client.commands staan
+for (const [name, command] of client.commands) {
+    if (command.data && command.execute) {
+        console.log(`✅ Command geladen: ${name}`);
+    } else {
+        console.warn(`⚠️ Command ${name} mist data of execute()`);
     }
 }
+
 
 
 /* ======================
@@ -523,5 +518,6 @@ client.once("ready", () => {
    LOGIN
 ====================== */
 client.login(TOKEN);
+
 
 
