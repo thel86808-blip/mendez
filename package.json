@@ -1,0 +1,16 @@
+{
+  "name": "murats-shop-bot",
+  "version": "1.0.0",
+  "description": "Discord bot voor Murat's Shop",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5"
+  }
+}
