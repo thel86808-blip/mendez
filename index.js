@@ -509,6 +509,7 @@ if (fs.existsSync(commandsPath)) {
     }
 }
 
+
 /* ======================
    READY
 ====================== */
@@ -521,3 +522,4 @@ client.once("ready", () => {
    LOGIN
 ====================== */
 client.login(TOKEN);
+
