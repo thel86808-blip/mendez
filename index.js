@@ -1,83 +1,58 @@
+/* ======================
+   IMPORTS
+====================== */
 const {
-Client,
-GatewayIntentBits,
-Collection,
-ActivityType,
-SlashCommandBuilder,
-EmbedBuilder,
-ActionRowBuilder,
-ButtonBuilder,
-ButtonStyle,
-PermissionFlagsBits
+    Client,
+    GatewayIntentBits,
+    Collection,
+    ActivityType,
+    SlashCommandBuilder,
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    PermissionFlagsBits
 } = require("discord.js");
+const fs = require("fs");
+const express = require("express");
+require("dotenv").config();
 
-require('dotenv').config();
-
+/* ======================
+   CLIENT
+====================== */
 const client = new Client({
-intents: [
-GatewayIntentBits.Guilds,
-GatewayIntentBits.GuildMembers,
-GatewayIntentBits.GuildMessages
-]
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
+    ]
 });
 
 client.commands = new Collection();
 
 /* ======================
-   AANGENOMEN
+   ENV
 ====================== */
-client.commands.set("aangenomen", {
-data: new SlashCommandBuilder()
-.setName("aangenomen")
-.setDescription("Geeft een gebruiker de gangrollen.")
-.addUserOption(o =>
-o.setName("gebruiker").setDescription("Gebruiker").setRequired(true)
-)
-.addStringOption(o =>
-o.setName("reden").setDescription("Reden").setRequired(false)
-),
+const TOKEN = process.env.TOKEN;
+const CLIENT_ID = process.env.CLIENT_ID;
+const GUILD_ID = process.env.GUILD_ID;
+const PORT = process.env.PORT || 3000;
 
-async execute(interaction) {
-const LOG_CHANNEL_ID = "1379190130694160414";
-const STAFF_ROLE_NAMES = ["| Bloody Angels Lid", "| Proeftijd"];
-const ALLOWED_ROLE_NAME = "| Sollicitatie Behandelaar";
-
-const executor = interaction.member;
-if (!executor.roles.cache.some(r => r.name === ALLOWED_ROLE_NAME)) {
-return interaction.reply({ content: "❌ Geen permissie.", ephemeral: true });
+if (!TOKEN) {
+    console.error("❌ Geen token gevonden in .env!");
+    process.exit(1);
 }
-
-await interaction.deferReply();
-
-const targetUser = interaction.options.getUser("gebruiker");
-const reason = interaction.options.getString("reden") || "Geen reden";
-const member = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
-if (!member) return interaction.editReply("Gebruiker niet gevonden.");
-
-const roles = STAFF_ROLE_NAMES
-.map(n => interaction.guild.roles.cache.find(r => r.name === n))
-.filter(Boolean);
-
-await member.roles.add(roles);
-
-const embed = new EmbedBuilder()
-.setTitle("✅ Aangenomen")
-.setColor("Green")
-.addFields(
-{ name: "Gebruiker", value: `<@${member.id}>` },
-{ name: "Door", value: `<@${executor.id}>` },
-{ name: "Reden", value: reason }
-);
-
-await interaction.editReply({ embeds: [embed] });
-
-const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
-if (logChannel) logChannel.send({ embeds: [embed] });
-}
-});
 
 /* ======================
-   CLEAR
+   EXPRESS SERVER (voor Render)
+====================== */
+const app = express();
+app.get("/", (req, res) => res.send("Bot draait!"));
+app.listen(PORT, () => console.log(`✅ Express server draait op poort ${PORT}`));
+
+/* ======================
+CLEAR
 ====================== */
 client.commands.set("clear", {
 data: new SlashCommandBuilder()
@@ -104,7 +79,7 @@ await interaction.reply({ content: `🧹 ${amount} berichten verwijderd`, epheme
 });
 
 /* ======================
-   EMBED
+EMBED
 ====================== */
 client.commands.set("embed", {
 data: new SlashCommandBuilder()
@@ -125,7 +100,7 @@ await interaction.reply({ content: "✅ Embed verzonden", ephemeral: true });
 });
 
 /* ======================
-   GIVEAWAY (JOIN / LEAVE)
+GIVEAWAY (JOIN / LEAVE)
 ====================== */
 client.commands.set("giveaway", {
 data: new SlashCommandBuilder()
@@ -198,7 +173,7 @@ await msg.edit({ embeds: [winEmbed], components: [] });
 });
 
 /* ======================
-   ADDROLE
+ADDROLE
 ====================== */
 client.commands.set("addrole", {
 data: new SlashCommandBuilder()
@@ -240,7 +215,7 @@ new EmbedBuilder()
 });
 
 /* ======================
-   KICK
+KICK
 ====================== */
 client.commands.set("kick", {
 data: new SlashCommandBuilder()
@@ -265,7 +240,7 @@ await interaction.reply({ content: `👢 ${user.tag} gekickt`, ephemeral: true }
 });
 
 /* ======================
-   USERINFO
+USERINFO
 ====================== */
 client.commands.set("userinfo", {
 data: new SlashCommandBuilder()
@@ -292,7 +267,7 @@ await interaction.reply({ embeds: [embed] });
 });
 
 /* ======================
-   STATUS
+STATUS
 ====================== */
 let currentStatus = "open";
 
@@ -327,7 +302,7 @@ await interaction.reply({ content: "✅ Status geplaatst", ephemeral: true });
 });
 
 /* ======================
-   ROLAANVRAAG
+ROLAANVRAAG
 ====================== */
 client.commands.set("rolaanvraag", {
 data: new SlashCommandBuilder()
@@ -373,7 +348,7 @@ await interaction.reply({ content: "✅ Rolaanvraag verzonden", ephemeral: true 
 });
 
 /* ======================
-   WARN SYSTEM
+WARN SYSTEM
 ====================== */
 const warns = new Map();
 
@@ -423,82 +398,112 @@ await interaction.reply({ content: "✅ Warn gegeven", ephemeral: true });
 }
 });
 
+// Hier kun je je commands handmatig toevoegen zoals je al deed:
+client.commands.set("aangenomen", {
+    data: new SlashCommandBuilder()
+        .setName("aangenomen")
+        .setDescription("Geeft een gebruiker de gangrollen.")
+        .addUserOption(o =>
+            o.setName("gebruiker").setDescription("Gebruiker").setRequired(true)
+        )
+        .addStringOption(o =>
+            o.setName("reden").setDescription("Reden").setRequired(false)
+        ),
+    async execute(interaction) {
+        const LOG_CHANNEL_ID = "1379190130694160414";
+        const STAFF_ROLE_NAMES = ["| Bloody Angels Lid", "| Proeftijd"];
+        const ALLOWED_ROLE_NAME = "| Sollicitatie Behandelaar";
+
+        const executor = interaction.member;
+        if (!executor.roles.cache.some(r => r.name === ALLOWED_ROLE_NAME)) {
+            return interaction.reply({ content: "❌ Geen permissie.", ephemeral: true });
+        }
+
+        await interaction.deferReply();
+
+        const targetUser = interaction.options.getUser("gebruiker");
+        const reason = interaction.options.getString("reden") || "Geen reden";
+        const member = await interaction.guild.members.fetch(targetUser.id).catch(() => null);
+        if (!member) return interaction.editReply("Gebruiker niet gevonden.");
+
+        const roles = STAFF_ROLE_NAMES
+            .map(n => interaction.guild.roles.cache.find(r => r.name === n))
+            .filter(Boolean);
+
+        await member.roles.add(roles);
+
+        const embed = new EmbedBuilder()
+            .setTitle("✅ Aangenomen")
+            .setColor("Green")
+            .addFields(
+                { name: "Gebruiker", value: `<@${member.id}>` },
+                { name: "Door", value: `<@${executor.id}>` },
+                { name: "Reden", value: reason }
+            );
+
+        await interaction.editReply({ embeds: [embed] });
+
+        const logChannel = interaction.guild.channels.cache.get(LOG_CHANNEL_ID);
+        if (logChannel) logChannel.send({ embeds: [embed] });
+    }
+});
+
 /* ======================
    BUTTON INTERACTIONS
 ====================== */
 client.on("interactionCreate", async interaction => {
-if (!interaction.isButton()) return;
+    if (!interaction.isButton()) return;
 
-const [action, userId, roleId] = interaction.customId.split("_");
+    const [action, userId, roleId] = interaction.customId.split("_");
 
-if (action === "accept") {
-const member = await interaction.guild.members.fetch(userId);
-const role = interaction.guild.roles.cache.get(roleId);
+    if (action === "accept") {
+        const member = await interaction.guild.members.fetch(userId);
+        const role = interaction.guild.roles.cache.get(roleId);
+        await member.roles.add(role);
+        await interaction.update({
+            content: `✅ Rol toegekend aan <@${userId}>`,
+            components: [],
+            embeds: []
+        });
+    }
 
-await member.roles.add(role);
-await interaction.update({
-content: `✅ Rol toegekend aan <@${userId}>`,
-components: [],
-embeds: []
+    if (action === "deny") {
+        await interaction.update({
+            content: `❌ Rolaanvraag geweigerd`,
+            components: [],
+            embeds: []
+        });
+    }
 });
-}
 
-if (action === "deny") {
-await interaction.update({
-content: `❌ Rolaanvraag geweigerd`,
-components: [],
-embeds: []
-});
-}
-});
+/* ======================
+   COMMAND INTERACTIONS
+====================== */
+client.on("interactionCreate", async interaction => {
+    if (!interaction.isChatInputCommand()) return;
 
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
+
+    try {
+        await command.execute(interaction);
+    } catch (e) {
+        console.error(e);
+        if (!interaction.replied) {
+            await interaction.reply({ content: "❌ Error", ephemeral: true });
+        }
+    }
+});
 
 /* ======================
    READY
 ====================== */
 client.once("ready", () => {
-console.log(`✅ Online als ${client.user.tag}`);
-client.user.setActivity("Murat's Shop", { type: ActivityType.Watching });
-});
-
-/* ======================
-   INTERACTION
-====================== */
-client.on("interactionCreate", async interaction => {
-if (!interaction.isChatInputCommand()) return;
-const command = client.commands.get(interaction.commandName);
-if (!command) return;
-try {
-await command.execute(interaction);
-} catch (e) {
-console.error(e);
-if (!interaction.replied) {
-interaction.reply({ content: "❌ Error", ephemeral: true });
-}
-}
+    console.log(`✅ Online als ${client.user.tag}`);
+    client.user.setActivity("Murat's Shop", { type: ActivityType.Watching });
 });
 
 /* ======================
    LOGIN
 ====================== */
-
-const express = require('express'); // CommonJS-style
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.get('/', (req, res) => {
-  res.send('Bot draait!');
-});
-
-app.listen(PORT, () => {
-  console.log(`Webserver draait op poort ${PORT}`);
-});
-
-
-const token = process.env.TOKEN?.trim();
-console.log("TOKEN lengte na trim:", token.length);
-client.login(token);
-
-
-
-
+client.login(TOKEN);
