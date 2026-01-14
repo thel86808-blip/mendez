@@ -496,13 +496,37 @@ client.on("interactionCreate", async interaction => {
 });
 
 // Registreer alle commands die al in client.commands staan
-for (const [name, command] of client.commands) {
-    if (command.data && command.execute) {
+const { REST } = require("@discordjs/rest");
+const { Routes } = require("discord-api-types/v10");
+
+// Voeg dit ergens bovenaan toe, waar je ook client.commands hebt gedefinieerd
+client.commandArray = [];
+
+// Functie om commands te registreren bij Discord
+client.handleCommands = async () => {
+    // Loopt door alle commands die al in client.commands staan
+    for (const [name, command] of client.commands) {
+        if (!command.data || !command.execute) {
+            console.warn(`⚠️ Command ${name} mist data of execute()`);
+            continue;
+        }
+        client.commandArray.push(command.data.toJSON());
         console.log(`✅ Command geladen: ${name}`);
-    } else {
-        console.warn(`⚠️ Command ${name} mist data of execute()`);
     }
-}
+
+    // Registreren bij Discord
+    const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+    try {
+        console.log("De slashcommands worden geüpdatet...");
+        await rest.put(
+            Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+            { body: client.commandArray }
+        );
+        console.log("✅ Slashcommands succesvol geregistreerd!");
+    } catch (error) {
+        console.error(error);
+    }
+};
 
 
 
@@ -518,6 +542,7 @@ client.once("ready", () => {
    LOGIN
 ====================== */
 client.login(TOKEN);
+
 
 
 
