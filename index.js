@@ -481,5 +481,9 @@ interaction.reply({ content: "❌ Error", ephemeral: true });
 /* ======================
    LOGIN
 ====================== */
-console.log("TOKEN lengte:", process.env.TOKEN?.length);
+const token = process.env.TOKEN?.trim();
+console.log("TOKEN lengte na trim:", token.length);
+client.login(token);
+
+
 
