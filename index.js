@@ -11,6 +11,8 @@ ButtonStyle,
 PermissionFlagsBits
 } = require("discord.js");
 
+require('dotenv').config();
+
 const client = new Client({
 intents: [
 GatewayIntentBits.Guilds,
@@ -479,4 +481,5 @@ interaction.reply({ content: "❌ Error", ephemeral: true });
 /* ======================
    LOGIN
 ====================== */
-client.login("process.env.TOKEN");
+console.log("TOKEN lengte:", process.env.TOKEN?.length);
+
